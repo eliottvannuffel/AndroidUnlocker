@@ -558,82 +558,81 @@ class BootloaderTool(QWidget):
         """Detects manufacturer and model using ADB and Fastboot."""
         self.log_and_append("Attempting to detect device details...", status_msg="Detecting device...")
 
-        # First, try ADB properties if in ADB mode
-        if self.device_mode in ('adb', 'sideload'):
-            # Get properties directly via sync for detection logic
-            manufacturer_output, manufacturer_success = self.run_command_sync("adb shell getprop ro.product.manufacturer")
-            model_output, model_success = self.run_command_sync("adb shell getprop ro.product.model")
-
-            manufacturer = manufacturer_output if manufacturer_success else None
-            model = model_output if model_success else None
-            serial = self.device_serial_adb
-
-            if manufacturer and model:
-                self.device_manufacturer = manufacturer.strip()
-                self.device_model = model.strip()
-                self.manufacturer_label.setText(f"Manufacturer: {self.device_manufacturer}")
-                self.model_label.setText(f"Model: {self.device_model}")
-                self.serial_label.setText(f"Serial: {serial}")
-                self.device_config = self.find_device_config(self.device_manufacturer, self.device_model)
-                self.log_and_append(f"Detected device: {self.device_manufacturer} {self.device_model} (Serial: {serial}) via ADB", status_msg=f"Detected: {self.device_manufacturer} {self.device_model}")
-                config_source = "YAML" if self.device_config != self.device_db.get('default') else "Default"
-                self.log_and_append(f"Using device configuration: {config_source}")
-                if self.device_config and 'notes' in self.device_config:
-                    self.log_and_append(f"Device Notes: {self.device_config['notes']}", level=logging.WARNING)
-                self.statusBar.showMessage(f"Detected: {self.device_manufacturer} {self.device_model}", 5000)
-                # If ADB detection successful, also try getting all properties via async
-                self.run_command_async("adb shell getprop", success_msg="Fetched ADB properties.", error_msg_prefix="Failed to fetch all ADB properties.")
-
-            elif manufacturer:
-                 self.device_manufacturer = manufacturer.strip()
-                 self.device_model = "Unknown"
-                 self.manufacturer_label.setText(f"Manufacturer: {self.device_manufacturer}")
-                 self.model_label.setText("Model: Unknown")
-                 self.serial_label.setText(f"Serial: {serial}")
-                 self.device_config = self.find_device_config(self.device_manufacturer, None)
-                 self.log_and_append(f"Detected Manufacturer: {self.device_manufacturer} (Serial: {serial}) but could not get model. Attempting manufacturer match or using default configuration.", level=logging.WARNING)
-                 config_source = "YAML (Manufacturer Match)" if self.device_config and self.device_config != self.device_db.get('default') else "Default"
-                 self.log_and_append(f"Using configuration: {config_source}")
-                 if self.device_config and 'notes' in self.device_config:
-                    self.log_and_append(f"Device Notes: {self.device_config['notes']}", level=logging.WARNING)
-                 self.statusBar.showMessage("Detected Manufacturer, but failed to get Model.", 5000)
-                 self.run_command_async("adb shell getprop", success_msg="Fetched ADB properties.", error_msg_prefix="Failed to fetch all ADB properties.")
-            else:
-                 self.log_and_append("Failed to get ADB device properties.", level=logging.WARNING)
-                 # Fall through to Fastboot check
-
-
-        # If not in ADB mode or ADB detection failed, try Fastboot
-        if self.device_mode == 'fastboot':
-             serial = self.device_serial_fastboot
-             self.serial_label.setText(f"Serial: {serial}")
-             self.log_and_append(f"Device detected in Fastboot mode (Serial: {serial}). Getting fastboot variables...", status_msg="Detecting via Fastboot...")
-
-             # Get fastboot variables using async
-             self.get_fastboot_variables() # Output handled by signal slot
-
-             # Fastboot doesn't provide manufacturer/model standard properties easily
-             self.manufacturer_label.setText("Manufacturer: Unknown (Fastboot)")
-             self.model_label.setText("Model: Unknown (Fastboot)")
-             self.device_manufacturer = "Unknown"
-             self.device_model = "Unknown"
-             # Use default config in Fastboot unless a specific 'fastboot getvar all' parsing reveals manufacturer/model
-             self.device_config = self.device_db.get('default')
-             self.log_and_append("Using default configuration (Fastboot mode often has less detailed built-in properties).", level=logging.WARNING)
-             if self.device_config and 'notes' in self.device_config:
-                    self.log_and_append(f"Device Notes: {self.device_config['notes']}", level=logging.WARNING)
-             self.statusBar.showMessage(f"Fastboot device detected (Serial: {serial}).", 5000)
-
-
-        if self.device_mode == 'none':
-             self.manufacturer_label.setText("Manufacturer: Unknown")
-             self.model_label.setText("Model: Unknown")
-             self.serial_label.setText("Serial: N/A")
-             self.device_config = self.device_db.get('default')
-             self.log_and_append("No device detected in ADB or Fastboot mode.", level=logging.WARNING, status_msg="No device detected.")
-
         try:
-            pass
+            # First, try ADB properties if in ADB mode
+            if self.device_mode in ('adb', 'sideload'):
+                # Get properties directly via sync for detection logic
+                manufacturer_output, manufacturer_success = self.run_command_sync("adb shell getprop ro.product.manufacturer")
+                model_output, model_success = self.run_command_sync("adb shell getprop ro.product.model")
+
+                manufacturer = manufacturer_output if manufacturer_success else None
+                model = model_output if model_success else None
+                serial = self.device_serial_adb
+
+                if manufacturer and model:
+                    self.device_manufacturer = manufacturer.strip()
+                    self.device_model = model.strip()
+                    self.manufacturer_label.setText(f"Manufacturer: {self.device_manufacturer}")
+                    self.model_label.setText(f"Model: {self.device_model}")
+                    self.serial_label.setText(f"Serial: {serial}")
+                    self.device_config = self.find_device_config(self.device_manufacturer, self.device_model)
+                    self.log_and_append(f"Detected device: {self.device_manufacturer} {self.device_model} (Serial: {serial}) via ADB", status_msg=f"Detected: {self.device_manufacturer} {self.device_model}")
+                    config_source = "YAML" if self.device_config != self.device_db.get('default') else "Default"
+                    self.log_and_append(f"Using device configuration: {config_source}")
+                    if self.device_config and 'notes' in self.device_config:
+                        self.log_and_append(f"Device Notes: {self.device_config['notes']}", level=logging.WARNING)
+                    self.statusBar.showMessage(f"Detected: {self.device_manufacturer} {self.device_model}", 5000)
+                    # If ADB detection successful, also try getting all properties via async
+                    self.run_command_async("adb shell getprop", success_msg="Fetched ADB properties.", error_msg_prefix="Failed to fetch all ADB properties.")
+
+                elif manufacturer:
+                     self.device_manufacturer = manufacturer.strip()
+                     self.device_model = "Unknown"
+                     self.manufacturer_label.setText(f"Manufacturer: {self.device_manufacturer}")
+                     self.model_label.setText("Model: Unknown")
+                     self.serial_label.setText(f"Serial: {serial}")
+                     self.device_config = self.find_device_config(self.device_manufacturer, None)
+                     self.log_and_append(f"Detected Manufacturer: {self.device_manufacturer} (Serial: {serial}) but could not get model. Attempting manufacturer match or using default configuration.", level=logging.WARNING)
+                     config_source = "YAML (Manufacturer Match)" if self.device_config and self.device_config != self.device_db.get('default') else "Default"
+                     self.log_and_append(f"Using configuration: {config_source}")
+                     if self.device_config and 'notes' in self.device_config:
+                        self.log_and_append(f"Device Notes: {self.device_config['notes']}", level=logging.WARNING)
+                     self.statusBar.showMessage("Detected Manufacturer, but failed to get Model.", 5000)
+                     self.run_command_async("adb shell getprop", success_msg="Fetched ADB properties.", error_msg_prefix="Failed to fetch all ADB properties.")
+                else:
+                     self.log_and_append("Failed to get ADB device properties.", level=logging.WARNING)
+                     # Fall through to Fastboot check
+
+
+            # If not in ADB mode or ADB detection failed, try Fastboot
+            if self.device_mode == 'fastboot':
+                 serial = self.device_serial_fastboot
+                 self.serial_label.setText(f"Serial: {serial}")
+                 self.log_and_append(f"Device detected in Fastboot mode (Serial: {serial}). Getting fastboot variables...", status_msg="Detecting via Fastboot...")
+
+                 # Get fastboot variables using async
+                 self.get_fastboot_variables() # Output handled by signal slot
+
+                 # Fastboot doesn't provide manufacturer/model standard properties easily
+                 self.manufacturer_label.setText("Manufacturer: Unknown (Fastboot)")
+                 self.model_label.setText("Model: Unknown (Fastboot)")
+                 self.device_manufacturer = "Unknown"
+                 self.device_model = "Unknown"
+                 # Use default config in Fastboot unless a specific 'fastboot getvar all' parsing reveals manufacturer/model
+                 self.device_config = self.device_db.get('default')
+                 self.log_and_append("Using default configuration (Fastboot mode often has less detailed built-in properties).", level=logging.WARNING)
+                 if self.device_config and 'notes' in self.device_config:
+                        self.log_and_append(f"Device Notes: {self.device_config['notes']}", level=logging.WARNING)
+                 self.statusBar.showMessage(f"Fastboot device detected (Serial: {serial}).", 5000)
+
+
+            if self.device_mode == 'none':
+                 self.manufacturer_label.setText("Manufacturer: Unknown")
+                 self.model_label.setText("Model: Unknown")
+                 self.serial_label.setText("Serial: N/A")
+                 self.device_config = self.device_db.get('default')
+                 self.log_and_append("No device detected in ADB or Fastboot mode.", level=logging.WARNING, status_msg="No device detected.")
+
         except Exception as e:
             self.log_and_append(f"An error occurred during device detection: {e}", level=logging.ERROR)
             self.statusBar.showMessage("Error detecting device details. Check logs.", 5000)
