@@ -1,0 +1,51 @@
+# Python Bytecode and Cache
+*.pyc
+__pycache__/
+*.pyo
+*.pyd
+
+# Virtual Environments
+venv/
+env/
+*.venv
+*.env
+*/.env
+
+# Distribution / Build artifacts
+build/
+dist/
+*.egg-info/
+*.egg
+wheels/
+
+# Test artifacts
+.pytest_cache/
+.coverage
+htmlcov/
+*.prof
+*.lprof
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+
+# IDE / Editor specific files
+.idea/
+.vscode/
+*.sublime-*
+nbproject/
+
+# Log files (keep user-specific logs out of repo)
+*.log
+bootloader_tool_win95.log
+# Add any debug log files if they were created and not needed
+# startup_error.log
+# test_qt_error.log
+# import_error.log
+
+# Configuration (Optional - uncomment if devices.yaml should NOT be tracked)
+# devices.yaml
+
+# Secrets (if any added later)
+*.key
+*.secret
