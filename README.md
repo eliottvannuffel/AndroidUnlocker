@@ -121,17 +121,3 @@ samsung: # Match any Samsung device if model doesn't match specifically
 ## Logging
 
 * All operations and significant errors are logged to `bootloader_tool_win95.log` in the application's directory. Check this file for detailed information if you encounter issues.
-
----
-
-## Contributing
-
-(Optional: Add contribution guidelines if desired)
-Currently, contributions are not actively solicited, but feel free to fork the project or raise issues.
-
----
-
-## License
-
-(Optional: Add license information if desired)
-No license specified. Assume standard copyright unless otherwise stated.
