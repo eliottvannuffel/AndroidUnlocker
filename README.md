@@ -2,7 +2,6 @@
 
 A simple Python desktop application with a retro Windows 95 style GUI for performing common Android Debug Bridge (ADB) and Fastboot tasks related to bootloader management, flashing images, and sideloading.
 
-**(Add a Screenshot Here if desired)**
 ---
 
 **⚠️ DISCLAIMER & WARNINGS ⚠️**
